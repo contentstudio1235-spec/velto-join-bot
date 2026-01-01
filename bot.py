@@ -256,32 +256,40 @@ async def main():
 
     await dp.start_polling(bot)
 # ─────────────────────────
-# RENDER FREE TIER KEEP-ALIVE (HTTP DUMMY SERVER)
+# RENDER FREE TIER KEEP-ALIVE (ROBUST HTTP SERVER)
 # ─────────────────────────
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 class DummyHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
+    def _send_ok(self):
         self.send_response(200)
-        self.send_header("Content-type", "text/plain")
+        self.send_header("Content-Type", "text/plain")
         self.end_headers()
+
+    def do_GET(self):
+        self._send_ok()
         self.wfile.write(b"Velto bot is running")
 
     def do_HEAD(self):
-        self.send_response(200)
-        self.send_header("Content-type", "text/plain")
-        self.end_headers()
+        self._send_ok()
 
+    def do_POST(self):
+        self._send_ok()
+
+    # Silence default logging (optional but clean)
+    def log_message(self, format, *args):
+        return
 
 def start_dummy_server():
-    port = int(os.getenv("PORT", 10000))
-    server = HTTPServer(("0.0.0.0", port), DummyHandler)
-    server.serve_forever()
+    port = int(os.getenv("PORT", "10000"))
+    httpd = HTTPServer(("0.0.0.0", port), DummyHandler)
+    httpd.serve_forever()
 
 threading.Thread(target=start_dummy_server, daemon=True).start()
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
