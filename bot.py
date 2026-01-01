@@ -255,6 +255,26 @@ async def main():
         await db.commit()
 
     await dp.start_polling(bot)
+# ─────────────────────────
+# RENDER FREE TIER KEEP-ALIVE (HTTP DUMMY SERVER)
+# ─────────────────────────
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Velto bot is running")
+
+def start_dummy_server():
+    port = int(os.getenv("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), DummyHandler)
+    server.serve_forever()
+
+threading.Thread(target=start_dummy_server, daemon=True).start()
 
 if __name__ == "__main__":
     asyncio.run(main())
+
